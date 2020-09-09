@@ -1,0 +1,14 @@
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\bin\Debug\netcoreapp2.2\AssesmentOnlineAPI.deps.json
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\bin\Debug\netcoreapp2.2\AssesmentOnlineAPI.runtimeconfig.json
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\bin\Debug\netcoreapp2.2\AssesmentOnlineAPI.runtimeconfig.dev.json
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\bin\Debug\netcoreapp2.2\AssesmentOnlineAPI.dll
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.csprojAssemblyReference.cache
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.csproj.CoreCompileInputs.cache
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.RazorAssemblyInfo.cache
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.RazorAssemblyInfo.cs
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.AssemblyInfoInputs.cache
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.AssemblyInfo.cs
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.RazorTargetAssemblyInfo.cache
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\bin\Debug\netcoreapp2.2\AssesmentOnlineAPI.pdb
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.dll
+C:\Users\Christian\Desktop\AssesmentOnlineAPI\AssesmentOnlineAPI\obj\Debug\netcoreapp2.2\AssesmentOnlineAPI.pdb
