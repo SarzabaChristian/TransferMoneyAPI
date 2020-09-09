@@ -26,15 +26,18 @@ namespace AssesmentOnlineAPI.Migrations
 
                     b.Property<Guid>("DestinationAccountID");
 
-                    b.Property<decimal>("DestinationNewBalance");
+                    b.Property<decimal>("DestinationNewBalance")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("SourceAccountID");
 
-                    b.Property<decimal>("SourceNewBalance");
+                    b.Property<decimal>("SourceNewBalance")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TransactionId");
 
-                    b.Property<decimal>("TransferAmount");
+                    b.Property<decimal>("TransferAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -62,6 +65,10 @@ namespace AssesmentOnlineAPI.Migrations
                     b.Property<string>("Username");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasFilter("[Username] IS NOT NULL");
 
                     b.ToTable("Users","dbo");
                 });

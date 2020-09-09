@@ -13,6 +13,11 @@ namespace AssesmentOnlineAPI.Data
 
         public DbSet<User> Users { get; set; }        
         public DbSet<TransactionLog> TransactionLogs { get; set; }
-     
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<User>()
+                .HasIndex(x => x.Username)
+                .IsUnique();
+        } 
     }
 }

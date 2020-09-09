@@ -14,26 +14,14 @@ namespace AssesmentOnlineAPI.Models
         public Guid Id { get; set; }
         public int TransactionId { get; set; }
         public Guid SourceAccountID { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal SourceNewBalance { get; set; }
         public Guid DestinationAccountID { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal DestinationNewBalance { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TransferAmount { get; set; }
-
-
-        public TransactionLog(int transID,Guid srcID,decimal srcNewBal, Guid destID, decimal destNewBal,decimal transferAmt)
-        {
-            this.TransactionId = transID;
-            this.SourceAccountID = srcID;
-            this.SourceNewBalance = srcNewBal;
-            this.DestinationAccountID = destID;
-            this.DestinationNewBalance = destNewBal;
-            this.TransferAmount = transferAmt;
-        }
-
-        public TransactionLog()
-        {
-
-        }
+        
         //[ForeignKey("TransactionID")]
         //public MasterSetting TransactionStatus { get; set; }
 
