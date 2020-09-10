@@ -6,6 +6,7 @@ using AssesmentOnlineAPI.Data;
 using AssesmentOnlineAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using AssesmentOnlineAPI.Helpers;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AssesmentOnlineAPI.Services
 {
@@ -24,27 +25,43 @@ namespace AssesmentOnlineAPI.Services
 
         public async Task<bool> isAvailableToTransfer(Guid userId, decimal amountToBeTransfer)
         {
-            var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            return amountToBeTransfer > currentUser.Balance ? false : true;
+            try
+            {
+                var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+                return amountToBeTransfer > currentUser.Balance ? false : true;
+            }
+            catch (Exception ex)
+            {
+                var a = ex.Message;
+                throw;
+            }         
         }
 
         public async Task<TransactionLog> TransferMoney(Guid sourceAccountID, Guid destinationAccountID, decimal transferAmount)
         {
             decimal destNewBalance, srcNewBalance;
-            if (!TransferMoneyToUsers(sourceAccountID, destinationAccountID, transferAmount,out destNewBalance,out srcNewBalance))
-                return null;
-            
            
-            var newTransaction = new TransactionLog();
-            newTransaction.SourceAccountID = sourceAccountID;
-            newTransaction.DestinationAccountID = destinationAccountID;
-            newTransaction.TransactionId = (int)GlobalEnum.TransactionType.Transfer;
-            newTransaction.TransferAmount = transferAmount;
-            newTransaction.DestinationNewBalance = destNewBalance;
-            newTransaction.SourceNewBalance = srcNewBalance;
+            if (!TransferMoneyToUsers(sourceAccountID, destinationAccountID, transferAmount,out destNewBalance,out srcNewBalance))
+            return null;
 
-            _context.TransactionLogs.Add(newTransaction);
-            await _context.SaveChangesAsync();
+            var newTransaction = new TransactionLog();
+            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            {            
+                newTransaction.SourceAccountID = sourceAccountID;
+                newTransaction.DestinationAccountID = destinationAccountID;
+                newTransaction.TransactionId = (int)GlobalEnum.TransactionType.Transfer;
+                newTransaction.TransferAmount = transferAmount;
+                newTransaction.DestinationNewBalance = destNewBalance;
+                newTransaction.SourceNewBalance = srcNewBalance;
+
+                _context.TransactionLogs.Add(newTransaction);
+                await _context.SaveChangesAsync();
+                transaction.Commit();
+            }
+
+
+
+
 
             return newTransaction;
         }
@@ -55,24 +72,26 @@ namespace AssesmentOnlineAPI.Services
         }
         private bool TransferMoneyToUsers(Guid sourceAccountID, Guid destinationAccountID, decimal transferAmount,out decimal destinationNewBalance,out decimal sourceNewBalance)
         {
-            var currentUser = GetUserByID(sourceAccountID);
-            var destinationUser = GetUserByID(destinationAccountID);
+            var isSaved = false;
+            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            {
+                var currentUser = GetUserByID(sourceAccountID);
+                var destinationUser = GetUserByID(destinationAccountID);
 
-            destinationUser.Balance += transferAmount;
-            currentUser.Balance -= transferAmount;
-            
-            _context.Entry(currentUser).Property(x => x.Balance).IsModified = true;
-            _context.Entry(destinationUser).Property(x => x.Balance).IsModified = true;
-            destinationNewBalance = destinationUser.Balance;
-            sourceNewBalance = currentUser.Balance;
-            var isSaved= _context.SaveChanges()>0;
+                destinationUser.Balance += transferAmount;
+                currentUser.Balance -= transferAmount;
 
+                _context.Entry(currentUser).Property(x => x.Balance).IsModified = true;
+                _context.Entry(destinationUser).Property(x => x.Balance).IsModified = true;
+                destinationNewBalance = destinationUser.Balance;
+                sourceNewBalance = currentUser.Balance;
+                isSaved = _context.SaveChanges() > 0;
+                transaction.Commit();
+            }            
             if (!isSaved)
-                return false;
+                return false;          
 
-          
-
-            return true;
+            return isSaved;
         }
     }
 }
