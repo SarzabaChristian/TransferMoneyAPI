@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AssesmentOnlineAPI.Data;
@@ -7,11 +6,16 @@ using AssesmentOnlineAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using AssesmentOnlineAPI.Helpers;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Threading;
+using AssesmentOnlineAPI.Helpers;
+using System.Diagnostics;
 
 namespace AssesmentOnlineAPI.Services
 {
     public class UserServices : IUserServices
     {
+        //private object processLock = new object();
+        AutoResetEvent threadHandler = new AutoResetEvent(false);
         private readonly TransferAccountDBContext _context;
         public UserServices(TransferAccountDBContext context)
         {
@@ -34,64 +38,76 @@ namespace AssesmentOnlineAPI.Services
             {
                 var a = ex.Message;
                 throw;
-            }         
+            }
         }
-
         public async Task<TransactionLog> TransferMoney(Guid sourceAccountID, Guid destinationAccountID, decimal transferAmount)
         {
-            decimal destNewBalance, srcNewBalance;
-           
-            if (!TransferMoneyToUsers(sourceAccountID, destinationAccountID, transferAmount,out destNewBalance,out srcNewBalance))
-            return null;
-
             var newTransaction = new TransactionLog();
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
-            {            
-                newTransaction.SourceAccountID = sourceAccountID;
-                newTransaction.DestinationAccountID = destinationAccountID;
-                newTransaction.TransactionId = (int)GlobalEnum.TransactionType.Transfer;
-                newTransaction.TransferAmount = transferAmount;
-                newTransaction.DestinationNewBalance = destNewBalance;
-                newTransaction.SourceNewBalance = srcNewBalance;
-
-                _context.TransactionLogs.Add(newTransaction);
-                await _context.SaveChangesAsync();
-                transaction.Commit();
-            }
-
-
-
-
-
+            ThreadControl.threads.Add(Task.Run(() => TransferMoneyToUsers(sourceAccountID, destinationAccountID, transferAmount, ref newTransaction)));
+            Task.WaitAll(ThreadControl.threads.ToArray());
             return newTransaction;
         }
-
         private User GetUserByID(Guid id)
         {
-            return _context.Users.FirstOrDefault(x => x.Id == id);
+            return _context.Users.AsNoTracking().FirstOrDefault(x => x.Id == id);
         }
-        private bool TransferMoneyToUsers(Guid sourceAccountID, Guid destinationAccountID, decimal transferAmount,out decimal destinationNewBalance,out decimal sourceNewBalance)
+        //
+        private void TransferMoneyToUsers(Guid sourceAccountID, Guid destinationAccountID, decimal transferAmount, ref TransactionLog transactionLog)
         {
-            var isSaved = false;
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            var sourceUser = new User();
+            var destinationUser = new User();
+            decimal srcNewBal = 0;
+            decimal dstNewBal = 0;
+            Monitor.Enter(ThreadControl.obj);
+            try
             {
-                var currentUser = GetUserByID(sourceAccountID);
-                var destinationUser = GetUserByID(destinationAccountID);
-
-                destinationUser.Balance += transferAmount;
-                currentUser.Balance -= transferAmount;
-
-                _context.Entry(currentUser).Property(x => x.Balance).IsModified = true;
-                _context.Entry(destinationUser).Property(x => x.Balance).IsModified = true;
-                destinationNewBalance = destinationUser.Balance;
-                sourceNewBalance = currentUser.Balance;
-                isSaved = _context.SaveChanges() > 0;
-                transaction.Commit();
-            }            
-            if (!isSaved)
-                return false;          
-
-            return isSaved;
+                ThreadControl.threadCount += 1;
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        sourceUser = GetUserByID(sourceAccountID);
+                        destinationUser = GetUserByID(destinationAccountID);
+                        srcNewBal = sourceUser.Balance - transferAmount;
+                        dstNewBal = destinationUser.Balance + transferAmount;
+                        UpdateBalance(sourceUser, srcNewBal);
+                        UpdateBalance(destinationUser, dstNewBal);
+                        if (sourceUser.Balance >= transferAmount || sourceUser.Balance == 0)
+                        {
+                            var newTransaction = new TransactionLog();
+                            newTransaction.SourceAccountID = sourceUser.Id;
+                            newTransaction.DestinationAccountID = destinationUser.Id;
+                            newTransaction.TransactionId = (int)GlobalEnum.TransactionType.Transfer;
+                            newTransaction.TransferAmount = transferAmount;
+                            newTransaction.DestinationNewBalance = srcNewBal;
+                            newTransaction.SourceNewBalance = dstNewBal;
+                            _context.TransactionLogs.Add(newTransaction);
+                            _context.SaveChanges();
+                            transactionLog = newTransaction;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                        transaction.Commit();
+                    }
+                    catch (DbUpdateConcurrencyException ex)
+                    {
+                        transaction.Rollback();
+                        throw new Exception("Failed!");
+                    }
+                    transaction.Dispose();
+                }
+            }
+            finally
+            {
+                Monitor.Exit(ThreadControl.obj);
+            }
+        }
+        private void UpdateBalance(User user, decimal amount)
+        {
+            user.Balance = amount;
+            _context.Entry(user).Property(x => x.Balance).IsModified = true;
         }
     }
 }

@@ -60,7 +60,7 @@ namespace AssesmentOnlineAPI.Controllers
             var tokenDescription = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
+                Expires = DateTime.Now.AddDays(14),
                 SigningCredentials = credential
             };
 

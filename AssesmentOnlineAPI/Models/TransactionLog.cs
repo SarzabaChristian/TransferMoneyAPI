@@ -21,6 +21,7 @@ namespace AssesmentOnlineAPI.Models
         public decimal DestinationNewBalance { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal TransferAmount { get; set; }
+
         
         //[ForeignKey("TransactionID")]
         //public MasterSetting TransactionStatus { get; set; }
