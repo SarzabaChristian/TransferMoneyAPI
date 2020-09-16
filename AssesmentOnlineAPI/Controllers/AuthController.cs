@@ -31,8 +31,8 @@ namespace AssesmentOnlineAPI.Controllers
                 registerUser.InitialBalance = 0;
 
             registerUser.Username = registerUser.Username.ToLower();
-            //if (await _services.isExistingUser(registerUser.Username))
-            //    return BadRequest("Username '" + registerUser.Username + "' already exists");
+            if (await _services.isExistingUser(registerUser.Username))
+                return BadRequest("Username '" + registerUser.Username + "' already exists");
 
             var newUser = new User();
             newUser = registerUser;
@@ -65,12 +65,10 @@ namespace AssesmentOnlineAPI.Controllers
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescription);
+            SecurityToken securityToken = tokenHandler.CreateToken(tokenDescription);
+            string token = tokenHandler.WriteToken(securityToken);
 
-            return Ok(new
-            {
-                token = tokenHandler.WriteToken(token)
-            });
+            return Ok(token);
 
         }
     }

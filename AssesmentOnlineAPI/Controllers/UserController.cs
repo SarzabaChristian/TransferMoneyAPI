@@ -40,8 +40,9 @@ namespace AssesmentOnlineAPI.Controllers
                 return BadRequest("You cannot transfer money greater than your balance");
 
             var newTransaction=await _services.TransferMoney(transfer.SourceAccountID, transfer.DestinationAccountID, transfer.Amount);
-            if (newTransaction == null)
-                return BadRequest();
+            if (newTransaction == null || newTransaction.Id==Guid.Empty)
+                return BadRequest("Unavailable to process your transaction");
+
 
 
             return Ok(newTransaction.Id);

@@ -35,9 +35,8 @@ namespace AssesmentOnlineAPI.Services
                 return amountToBeTransfer > currentUser.Balance ? false : true;
             }
             catch (Exception ex)
-            {
-                var a = ex.Message;
-                throw;
+            {              
+                throw new Exception();
             }
         }
         public async Task<TransactionLog> TransferMoney(Guid sourceAccountID, Guid destinationAccountID, decimal transferAmount)
